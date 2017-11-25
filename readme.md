@@ -32,3 +32,6 @@ tcp_segment_len = total - ip_header - tcp_header
 
 about squence number
 http://packetlife.net/blog/2010/jun/7/understanding-tcp-sequence-acknowledgment-numbers/
+
+#bug
+解析dns 回复的包的时候会有问题
