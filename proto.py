@@ -1,4 +1,4 @@
-from until import byte2bin,str2hex,str2byte,hexstr2unicode,get_mac,get_ip,get_timestamp
+from until import byte2bin,str2hex,str2byte,hexstr2unicode,get_mac,get_ip,get_timestamp,hexstr2bytes
 
 
 class Ether(object):
@@ -81,10 +81,7 @@ class Icmp(object):
         self.sequence_number_le = self.sequence_number_be[2:4]+self.sequence_number_be[:2]
         self.timestamp_from_icmp_data = get_timestamp(data[16:32])
         self.data_length = len(data[32:])//2
-        try:
-            self.data = hexstr2unicode(data[32:])
-        except:
-            self.data = data[32:]
+        self.data = hexstr2bytes(data[32:])
 
     def summary(self):
         print('----ICMP----')
@@ -122,10 +119,7 @@ class Tcp(object):
 
     def get_data(self, data):
         if self.segment_data_length > 0:
-            try:
-                self.actual_data = hexstr2unicode(data[self.header_length*2:])
-            except:
-                self.actual_data = 'when deal the %s meet some bugs' % self.stream_index
+            self.actual_data = hexstr2bytes(data[self.header_length*2:])
             return self.actual_data
         return 'no data'
 
@@ -133,7 +127,7 @@ class Tcp(object):
         if self.segment_data_length > 0:
             if self.source_port == 80 or self.destination_port == 80:
                 self.get_data(data)
-                if 'HTTP/' in self.actual_data:
+                if b'HTTP/' in self.actual_data:
                     self.next_proto = 'http'
             elif self.source_port == 443 or self.destination_port == 443:
                 self.next_proto = 'TSL'
@@ -166,10 +160,7 @@ class Dns(object):
         self.answer_rrs = int(header[12:16], 16)
         self.authority_rrs = int(header[16:20], 16)
         self.additional_rrs = int(header[20:24], 16)
-        try:
-            self.query_name = hexstr2unicode(header[24:-8])
-        except:
-            self.query_name = 'the answer have little bug'
+        self.query_name = hexstr2bytes(header[24:-8])
         self.query_type = header[-8:-4]
         self.query_class = header[-4:]
 
