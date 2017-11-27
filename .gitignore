@@ -3,3 +3,4 @@ __pycache__/
 *.cap
 *.txt
 *.log
+wsniff/db.sqlite3

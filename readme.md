@@ -1,4 +1,4 @@
-
+```
 0                   1                   2                   3   
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -18,6 +18,21 @@
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                             data                              |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+# 运行方式
+- cd wsniff
+- python3 manage.py makemigrations wshark
+- python3 manage.py migrate
+- sudo python3 manage.py runserver
+- 可能需要更改wsniff/wsniffer.py 里面的网卡名称
+
+
+# 抓包流程
+- 访问127.0.0.1/wshark
+- 开始抓包127.0.0.1/wshark?start=on
+- 停止抓包127.0.0.1/wshark?start=off
+- 删除所有抓的包 127.0.0.1/wshark?delete=yes
+
 
 wireshark 根据srcip port desip port 来确认是同一流(stream index)
 
