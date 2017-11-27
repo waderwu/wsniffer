@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+{% block content %}
+ <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+
+    <title>Wshark</title>
+
+    <!-- Bootstrap core CSS -->
+    <!--<link href="/static/wshark/css/bootstrap.min.css" rel="stylesheet">-->
+     <link href="https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/bootstrap.css" rel="stylesheet">
+     <link href="https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+<body>
+    <div class="container">
+
+        <!-- 导航栏 -->
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="/wshark">Wshark</a>
+                </div>
+            </div>
+        </nav>
+
+        <table class="table table-striped">
+            <caption>抓包结果</caption>
+                  <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Time</th>
+                        <th>Source</th>
+                        <th>Destination</th>
+                        <th>Protocol</th>
+                        <th>Length</th>
+                        <th>Info</th>
+                    </tr>
+                  </thead>
+            <tbody>
+            {% if packets %}
+                {% for packet in packets %}
+                    {% if packet.proto == 'arp' %}
+                    <tr>
+                      <td>{{packet.id}}</td>
+                      <td>notime</td>
+
+                            <td>{{packet.etherm.s_mac}}</td>
+                            <td>{{packet.etherm.d_mac}}</td>
+                            <td>arp</td>
+                            <td>length</td>
+                            <td>Application Data[TCP segment of a reassembled PDU]</td>
+                    </tr>
+                    {% endif %}
+                {% if packet.proto == 'tcp' %}
+                    <tr>
+                      <td>{{packet.id}}</td>
+                      <td>notime</td>
+
+                            <td>{{packet.ipm.source}}</td>
+                            <td>{{packet.ipm.destination}}</td>
+                            <td>tcp</td>
+                            <td>length</td>
+                            <td>Application Data[TCP segment of a reassembled PDU]</td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
+
+
+    </div>
+
+</body>
+
+</html>
+
+{% endblock %}

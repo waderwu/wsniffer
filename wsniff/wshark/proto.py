@@ -1,8 +1,72 @@
-from until import byte2bin, str2hex, str2byte, hexstr2unicode, get_mac, get_ip, get_timestamp, hexstr2bytes
+def str2hex(packet):
+    '''
+    b'aa' => '6161'
+    'aa'  => '6161'
+    '''
+    if (isinstance(packet,str)):
+        return "".join("{:02x}".format(ord(c)) for c in packet)
+    if (isinstance(packet,bytes)):
+        return packet.hex()
+
+
+def str2byte(string):
+    '''
+    '6161' => ['61','61']
+    '''
+
+    return [string[i:i+2] for i in range(0,len(string),2)]
+
+
+def byte2bin(hexstr):
+    '''
+    03 => '00000011'
+    '''
+    length = len(hexstr)*4
+    formats = '{:0%db}'%length
+
+    return formats.format(int(hexstr,16))
+
+
+def hexstr2unicode(hexstr):
+    '''
+    '61' -> b'a'->'a'
+    '''
+    hexlist = str2byte(hexstr)
+    hexlist = [int(i,16) for i in hexlist]
+    byte = bytes(hexlist)
+
+    return byte.decode()
+
+
+def hexstr2bytes(hexstr):
+    '''
+        '61' -> b'a'
+        '''
+    hexlist = str2byte(hexstr)
+    hexlist = [int(i, 16) for i in hexlist]
+    byte = bytes(hexlist)
+
+    return byte
+
+
+def get_mac(strbyte):
+    return ":".join(str2byte(strbyte))
+
+
+def get_ip(strbyte):
+    ip = str2byte(strbyte)
+    ip = '.'.join([str(int(i,16)) for i in ip])
+    return ip
+
+
+def get_timestamp(strbyte):
+    '''
+    '''
+    return 'will be done'
 
 
 class Ether(object):
-    next_proto_map = {'0806': 'arp', '0800': 'ipv4'}
+    next_proto_map = {'0806': 'arp', '0800': 'ipv4', '86dd': 'ipv6'}
     header_length = 14  # bytes
 
     def __init__(self, header):
@@ -72,7 +136,7 @@ class Icmp(object):
     header_length = 16*2
 
     def __init__(self,data):
-        self.type = data[:2]
+        self.type_ = data[:2]
         self.code = data[2:4]
         self.checksum = data[4:8]
         self.identifier_be = data[8:12]
@@ -81,7 +145,7 @@ class Icmp(object):
         self.sequence_number_le = self.sequence_number_be[2:4]+self.sequence_number_be[:2]
         self.timestamp_from_icmp_data = get_timestamp(data[16:32])
         self.data_length = len(data[32:])//2
-        self.data = hexstr2bytes(data[32:])
+        self.data = data[32:]
 
     def summary(self):
         print('----ICMP----')
@@ -119,7 +183,7 @@ class Tcp(object):
 
     def get_data(self, data):
         if self.segment_data_length > 0:
-            self.actual_data = hexstr2bytes(data[self.header_length*2:])
+            self.actual_data = data[self.header_length*2:]
             return self.actual_data
         return 'no data'
 
@@ -127,7 +191,7 @@ class Tcp(object):
         if self.segment_data_length > 0:
             if self.source_port == 80 or self.destination_port == 80:
                 self.get_data(data)
-                if b'HTTP/' in self.actual_data:
+                if str2hex('HTTP/') in self.actual_data:
                     self.next_proto = 'http'
             elif self.source_port == 443 or self.destination_port == 443:
                 self.next_proto = 'TSL'
@@ -167,7 +231,7 @@ class Dns(object):
             self.query_type = header[-8:-4]
             self.query_class = header[-4:]
         else:
-            self.answer_data = hexstr2bytes(header[24:])
+            self.answer_data = header[24:]
 
     def summary(self):
         print('----DNS----')
@@ -264,7 +328,10 @@ class Packet(object):
                 header = self.stream_packet[Ether.header_length*2+ip_header_length*2:]
 
                 self.tcp = Tcp(header, tcp_total_length)
-                self.proto = 'tcp'
+                if self.tcp.next_proto:
+                    self.proto = self.tcp.next_proto
+                else:
+                    self.proto = 'tcp'
 
             elif self.ip.next_proto == 'udp':
                 header = self.stream_packet[Ether.header_length*2+ip_header_length*2:Ether.header_length*2 + ip_header_length*2 + 8*2]
