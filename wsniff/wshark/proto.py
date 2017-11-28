@@ -4,7 +4,9 @@ def str2hex(packet):
     'aa'  => '6161'
     '''
     if (isinstance(packet,str)):
-        return "".join("{:02x}".format(ord(c)) for c in packet)
+        packet = packet.encode()
+        # return "".join("{:02x}".format(ord(c)) for c in packet)
+        return packet.hex()
     if (isinstance(packet,bytes)):
         return packet.hex()
 
@@ -194,6 +196,7 @@ class Tcp(object):
                 if str2hex('HTTP/') in self.actual_data:
                     self.next_proto = 'http'
             elif self.source_port == 443 or self.destination_port == 443:
+                self.get_data(data)
                 self.next_proto = 'TSL'
 
     def summary(self):

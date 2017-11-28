@@ -10,15 +10,16 @@
     <title>Wshark</title>
 
     <!-- Bootstrap core CSS -->
-    <!--<link href="/static/wshark/css/bootstrap.min.css" rel="stylesheet">-->
-     <link href="https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/bootstrap.css" rel="stylesheet">
-     <link href="https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/wshark/css/bootstrap.min.css" rel="stylesheet">
+     <link href="/static/wshark/css/bootstrap.css" rel="stylesheet">
+     <!--<link href="https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/bootstrap.css" rel="stylesheet">-->
+     <!--<link href="https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" rel="stylesheet">-->
+     <script src="/static/wshark/js/juqery.min.js"></script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
-      <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-      <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+      <!--<script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>-->
+    <!--<![endif]&ndash;&gt;-->
   </head>
 
 <body>
@@ -32,7 +33,15 @@
                 </div>
             </div>
         </nav>
-
+        <li><a href="/wshark?start=on">start</a></li>
+        <li><a href="/wshark?start=off">off</a></li>
+        <li><a href="/wshark?delete=yes">delete</a></li>
+        <li><a href="/wshark">refresh</a></li>
+        <!--{% csrf_token %}-->
+        <form action="/wshark/" method="get">
+            <input name="keyword">
+            <input type="submit" value="search"></input>
+        </form>
         <table class="table table-striped">
             <caption>抓包结果</caption>
                   <thead>
@@ -50,7 +59,7 @@
             {% if packets %}
                 {% for packet in packets %}
                     {% if packet.proto == 'arp' %}
-                    <tr>
+                    <tr class='clickable-row' data-href='/wshark/packet/{{packet.id}}'>
                       <td>{{packet.id}}</td>
                       <td>notime</td>
 
@@ -62,7 +71,7 @@
                     </tr>
                     {% endif %}
                 {% if packet.proto == 'tcp' %}
-                    <tr>
+                    <tr class='clickable-row' data-href='/wshark/packet/{{packet.id}}'>
                       <td>{{packet.id}}</td>
                       <td>notime</td>
 
@@ -78,10 +87,25 @@
             </tbody>
         </table>
 
+        {% if actual_datas %}
+         {% for actual_data, j in actual_datas %}
+            <a href="/wshark/stream/{{j}}">follow the tcp stream</a>
+            <p>{{actual_data}}</p>
+        {% endfor %}
+        {% endif %}
+
 
     </div>
 
 </body>
+
+        <script>
+            jQuery(document).ready(function($) {
+                $(".clickable-row").click(function() {
+                    window.location = $(this).data("href");
+                });
+            });
+        </script>
 
 </html>
 
