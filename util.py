@@ -1,4 +1,5 @@
 import time
+import subprocess,re
 
 def str2hex(packet):
     '''
@@ -64,4 +65,9 @@ def get_timestamp(strbyte):
     '''
     2017-11-28 10:00:00
     '''
+    strtime = ''
+    for i in range(len(strbyte)//2-1,-1,-1):
+        strtime += strbyte[2*i:2*i+2]
+    st = time.localtime(int(strtime,16))
+    return time.strftime('%Y-%m-%d %H:%M:%S',st)
 
