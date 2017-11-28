@@ -31,9 +31,23 @@
 - 访问127.0.0.1/wshark
 - 开始抓包127.0.0.1/wshark?start=on
 - 停止抓包127.0.0.1/wshark?start=off
+- 如果不是通过start=off,关闭可能会出现start=on 时候不能开启, 此时需要清除session, 127.0.0.1/wshark?start=clear, 然后再执行shtart=on
 - 删除所有抓的包 127.0.0.1/wshark?delete=yes
 
+已解决:
+- 抓包
+- 解析包()
+- 查询
+- 重组
 
+待解决:
+- models需增加 icmp 和dns
+- 解决out of oreder问题
+-  tcp dup 问题
+- 包过滤
+- 数据包保存
+- 文件过滤 可能根据http 请求头的content-type , text/html,.....等类型
+-
 wireshark 根据srcip port desip port 来确认是同一流(stream index)
 
 ip_header 代表的是32-bits word的数量
