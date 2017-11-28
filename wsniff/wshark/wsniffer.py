@@ -3,7 +3,10 @@ import traceback
 from django.db import transaction
 from proto import Packet, str2hex
 import os, sys, django
-sys.path.append("/home/waderwu/code/py/wsniffer/wsniff")
+
+path = os.path.dirname(__file__)
+sys.path.append(path+'/../')
+# sys.path.append("/home/waderwu/code/py/wsniffer/wsniff")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wsniff.settings")
 django.setup()
 from wshark.models import PacketM, ArpM, EtherM, TcpM, IpM
