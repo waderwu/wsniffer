@@ -1,6 +1,6 @@
 import socket
 import traceback
-from until import str2hex
+from util import str2hex
 from proto import Packet
 
 sniffer = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
