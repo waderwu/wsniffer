@@ -33,6 +33,8 @@
 - 停止抓包127.0.0.1/wshark?start=off
 - 如果不是通过start=off,关闭可能会出现start=on 时候不能开启, 此时需要清除session, 127.0.0.1/wshark?start=clear, 然后再执行shtart=on
 - 删除所有抓的包 127.0.0.1/wshark?delete=yes
+- 傻瓜式 follow stream index , 在首页直接点击一行,然后点击链接follow stream(没有考虑out of order)
+- 文件下载 http://127.0.0.1:8000/wshark/stream/38474?import (没有把图片text/html分开,直接以二进制文件存储)
 
 已解决:
 - 抓包
@@ -63,4 +65,5 @@ about squence number
 http://packetlife.net/blog/2010/jun/7/understanding-tcp-sequence-acknowledgment-numbers/
 
 #bug
-解析dns 回复的包的时候会有问题
+- 解析dns 回复的包的时候会有问题
+- 可能会丢失最后100个包(解决方法, 尽量抓时间长一点,多抓一点包)
