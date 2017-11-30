@@ -11,6 +11,41 @@ from .proto import hexstr2bytes, str2hex
 
 # Create your views here.
 
+class TcpStream(object):
+    def __init__(self, stream_index):
+        self.packets = PacketM.objects.filter(tcpm__stread_index=stream_index)
+        self.packets_data = PacketM.objects.filter(tcpm__stread_index=stream_index, tcpm__segment_data_length__gt=0)  #tcpm.segment_data_length >0
+        self.handshake1_packet = PacketM.objects.filter(tcpm__stread_index=stream_index, tcpm__syn=1, tcpm__ack=0)
+        self.handshake2_packet = PacketM.objects.filter(tcpm__stread_index=stream_index, tcpm__syn=1, tcpm__ack=1)
+        self.init_seqX = None
+        self.init_seqY = None
+        if self.handshake1_packet and self.handshake2_packet:
+            self.init_seqX = self.handshake1_packet.tcpm.sequence_number
+            self.init_seqY = self.handshake2_packet.tcpm.sequence_number
+        # self.delete_dup()
+
+    def get_order(self):
+        ordered_packet = []
+        next_seq = self.init_seqX+1
+        next_ack = self.init_seqY+1
+        for i in range(self.packets_data.count()):
+            the_packet = self.packets_data.filter(tcpm__sequence_number=next_seq, tcpm__acknowledgement_number=next_ack)
+            ordered_packet.append(the_packet)
+            next_seq = the_packet.tcpm.acknowledgement_number
+            next_ack = the_packet.tcpm.sequence_number + the_packet.tcpm.segment_data_length
+    def delete_dup(self):
+        checksums = []
+        packets_no_dup = []
+        for packet in self.packets:
+            if packet.tcpm.checksum not in checksums:
+                checksums.append(packet.tcpm.checksum)
+                packets_no_dup.append(packet)
+        self.packets = packets_no_dup  #may have bug
+
+
+    def check_dup(self):
+        pass
+
 def index(request):
     # arp1 = PacketM(proto='http')
     # arp1.save()
@@ -45,7 +80,7 @@ def index(request):
         if 'delete' in request.GET:
             packets.delete()
         # return HttpResponse("Hello, world. you're at the wsahrk index.")
-        context = {'packets': packets}
+        context = {'packets': packets[:100]}
     return render(
         request,
         'wshark/index.html',
@@ -72,6 +107,12 @@ def stream(request, stream_index):
         print(packet.id)
         if packet.tcpm.segment_data_length > 0:
             actual_datas.append((hexstr2bytes(packet.tcpm.actual_data),))
+    datas = b''
+    if 'import' in request.GET:
+        for data in actual_datas:
+            datas += data[0]
+        response = HttpResponse(datas,content_type='application//html')
+        return response
 
     context = {'actual_datas': actual_datas}
     return render(request, 'wshark/stream.html', context=context)

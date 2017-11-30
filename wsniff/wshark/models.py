@@ -4,7 +4,8 @@ from __future__ import unicode_literals
 from django.db import models
 
 # Create your models here.
-
+# class RawPacket(models.Model):
+#     raw = models.BinaryField()
 
 class PacketM(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -70,8 +71,8 @@ class TcpM(models.Model):
 
     source_port = models.IntegerField()
     destination_port = models.IntegerField()
-    sequence_number = models.IntegerField()
-    acknowledgement_number = models.IntegerField()
+    sequence_number = models.BigIntegerField()
+    acknowledgement_number = models.BigIntegerField()
     header_length = models.IntegerField()
     syn = models.CharField(max_length=50)
     ack = models.CharField(max_length=50)
@@ -85,8 +86,6 @@ class TcpM(models.Model):
     actual_data = models.TextField(blank=True, null=True, default='')
     next_proto = models.CharField(blank=True, null=True, default='',max_length=50)
     stream_index = models.IntegerField()
-
-
 
 
 class UdpM(models.Model):

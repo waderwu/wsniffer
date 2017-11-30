@@ -23,7 +23,7 @@ class ArpMAdmin(admin.ModelAdmin):
 
 @admin.register(TcpM)
 class TcpMAdmin(admin.ModelAdmin):
-    list_display = ('source_port', 'destination_port', 'syn', 'ack', 'stream_index')
+    list_display = ('source_port', 'destination_port', 'syn', 'ack', 'stream_index', 'sequence_number', 'acknowledgement_number', 'checksum', 'segment_data_length')
 
 
 @admin.register(IpM)
