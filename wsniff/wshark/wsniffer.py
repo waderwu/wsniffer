@@ -1,9 +1,9 @@
 import socket
 import traceback
 from django.db import transaction
-from multiprocessing import  Process
+from multiprocessing import Process
 from proto import Packet, str2hex
-import os, sys, django,netifaces
+import os, sys, django
 
 path = os.path.dirname(__file__)
 sys.path.append(path+'/../')
@@ -94,9 +94,9 @@ def sniff(ifrace='wlp3s0'):
         j = j + 1
 if __name__ == '__main__':
     packets = PacketM.objects.all().delete()
-    interface_list = netifaces.interfaces()
-    print("Please choose the interface you want from the list:")
-    for i in interface_list:
-        print(i)
-    interface = input()
-    sniff(interface)
+    # interface_list = netifaces.interfaces()
+    # print("Please choose the interface you want from the list:")
+    # for i in interface_list:
+    #     print(i)
+    # interface = input()
+    sniff('wlp5s0')
