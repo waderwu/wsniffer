@@ -3,7 +3,7 @@ import traceback
 from django.db import transaction
 from multiprocessing import  Process
 from proto import Packet, str2hex
-import os, sys, django
+import os, sys, django,netifaces
 
 path = os.path.dirname(__file__)
 sys.path.append(path+'/../')
@@ -44,7 +44,7 @@ def save_packet(packets, i):
             i = i + 1
 
 
-def sniff(ifrace='wlp5s0'):
+def sniff(ifrace='wlp3s0'):
     sniffer.bind((ifrace, 0))
     i = 1
     j = 0
@@ -94,4 +94,9 @@ def sniff(ifrace='wlp5s0'):
         j = j + 1
 if __name__ == '__main__':
     packets = PacketM.objects.all().delete()
-    sniff()
+    interface_list = netifaces.interfaces()
+    print("Please choose the interface you want from the list:")
+    for i in interface_list:
+        print(i)
+    interface = input()
+    sniff(interface)

@@ -1,4 +1,4 @@
-from until import byte2bin, str2hex, str2byte, hexstr2unicode, get_mac, get_ip, get_timestamp, hexstr2bytes
+from util import byte2bin, str2hex, str2byte, hexstr2unicode, get_mac, get_ipv4, get_ipv6, get_timestamp, hexstr2bytes
 
 
 class Ether(object):
@@ -27,9 +27,9 @@ class Arp(object):
         self.protocol_size = header[10:12]
         self.opcode = header[12:16]
         self.sender_mac_address = get_mac(header[16:28])
-        self.sender_ip_address = get_ip(header[28:36])
+        self.sender_ip_address = get_ipv4(header[28:36])
         self.target_mac_address = get_mac(header[36:48])
-        self.target_ip_address = get_ip(header[48:56])
+        self.target_ip_address = get_ipv4(header[48:56])
 
     def summary(self):
         print('----ARP---')
@@ -40,7 +40,7 @@ class Arp(object):
         print('target_mac_address %s ' % self.target_mac_address)
 
 
-class Ip(object):
+class Ipv4(object):
     # header_length = 20*2
     next_proto_map = {'06': 'tcp', '11': 'udp', '01': 'icmp'}
 
@@ -53,13 +53,32 @@ class Ip(object):
         self.flags = byte2bin(header[12:14])[:3]
         self.fragment_offset = byte2bin(header[12:16])[3:]
         self.time_to_live = header[16:18]  # ttl
-        self.next_proto = Ip.next_proto_map[header[18:20]]
+        self.next_proto = Ipv4.next_proto_map[header[18:20]]
         self.checksum = header[20:24]
-        self.source = get_ip(header[24:32])
-        self.destination = get_ip(header[32:40])
+        self.source = get_ipv4(header[24:32])
+        self.destination = get_ipv4(header[32:40])
+
+    def checksum_verify(self, header):
+        header.replace(header[20:24], '0000')
+        checksum_calc = '0000'
+        word_num = int(len(header) / 4)
+        for i in range(word_num):
+            checksum_int = int(header[4 * i:4 * i + 4], 16) + int(checksum_calc, 16)
+            checksum_calc = hex(checksum_int).replace('0x', '')
+            while len(checksum_calc) > 4:
+                checksum_calc = '000' + checksum_calc
+                checksum_int = int(checksum_calc[4:], 16) + int(checksum_calc[0:4], 16)
+                checksum_calc = hex(checksum_int).replace('0x', '')
+        checksum_calc = hex((int(checksum_calc, 16) ^ (16 * 16 * 16 * 16 - 1))).replace('0x', '')
+        while len(checksum_calc) < 4:
+            checksum_calc = '0' + checksum_calc
+        if self.checksum == checksum_calc:
+            return 1
+        else:
+            return 0
 
     def summary(self):
-        print('----IP----')
+        print('----IPv4----')
         print('version %s ' % self.version)
         print('header_length %d ' % self.header_length)
         print('total_length %d ' % self.total_length)
@@ -67,6 +86,33 @@ class Ip(object):
         print('source %s ' % self.source)
         print('destination %s ' % self.destination)
 
+class Ipv6(object):
+    next_proto_map = {'06': 'tcp', '11': 'udp', '01': 'icmp','58':'icmpv6'}
+
+    def __init__(self,header):
+        self.version = header[0]
+        self.traffic_class = '0x'+header[1:3]
+        self.differentiated_service_codepoint = int(byte2bin(header[1:3])[:6],2)
+        self.explicit_congestion_notification = int(byte2bin(header[1:3])[6:],2)
+        self.flow_label = '0x'+header[3:8]
+        self.payload_length = int(header[8:12],16)
+        self.next_proto = Ipv6.next_proto_map[header[12:14]]
+        self.hop_limit = int(header[14:16],16)
+        self.source = get_ipv6(header[16:48])
+        self.destination = get_ipv6(header[48:80])
+
+    def summary(self):
+        print('----IPv6----')
+        print('version %s ' % self.version)
+        print('traffic class %s ' % self.traffic_class)
+        print('differentiated service codepoint %d ' % self.differentiated_service_codepoint)
+        print('explicit congestion notification %d ' % self.explicit_congestion_notification)
+        print('flow label %s ' % self.flow_label)
+        print('payload length %d ' % self.payload_length)
+        print('next protocal %s ' % self.next_proto)
+        print('hop limit %d ' % self.hop_limit)
+        print('source %s ' % self.source)
+        print('destination %s ' % self.destination)
 
 class Icmp(object):
     header_length = 16*2
@@ -82,6 +128,27 @@ class Icmp(object):
         self.timestamp_from_icmp_data = get_timestamp(data[16:32])
         self.data_length = len(data[32:])//2
         self.data = hexstr2bytes(data[32:])
+
+    def checksum_verify(self, data):
+        data = data.replace(data[4:8], '0000')
+        checksum_calc = '0000'
+        if len(data) % 4:
+            data = data[:-2] + '00' + data[-2:]
+        word_num = int(len(data) / 4)
+        for i in range(word_num):
+            checksum_int = int(data[4 * i:4 * i + 4], 16) + int(checksum_calc, 16)
+            checksum_calc = hex(checksum_int).replace('0x', '')
+            while len(checksum_calc) > 4:
+                checksum_calc = '000' + checksum_calc
+                checksum_int = int(checksum_calc[4:], 16) + int(checksum_calc[0:4], 16)
+                checksum_calc = hex(checksum_int).replace('0x', '')
+        checksum_calc = hex((int(checksum_calc, 16) ^ (16 * 16 * 16 * 16 - 1))).replace('0x', '')
+        while len(checksum_calc) < 4:
+            checksum_calc = '0' + checksum_calc
+        if self.checksum == checksum_calc:
+            return 1
+        else:
+            return 0
 
     def summary(self):
         print('----ICMP----')
@@ -131,6 +198,39 @@ class Tcp(object):
                     self.next_proto = 'http'
             elif self.source_port == 443 or self.destination_port == 443:
                 self.next_proto = 'TSL'
+
+    def get_options(self,options_data):
+        option_name = {'00':'EOL','01':'NOP','02':'MSS','03':'WS','04':'SACK Permitted','05':'SACK','06':'Echo','07':'Echo Reply','08':'Timestamps'}
+        option_length = {'00':0,'01':0,'02':4,'03':3,'04':2,'06':6,'07':6,'08':10}
+        '''
+        waiting to complete
+        '''
+
+    def checksum_verify(self, data, ip_header):
+        data = data.replace(data[32:36], '0000')
+        tcp_length = hex(int(ip_header[4:8], 16) - 20).replace('0x', '')
+        while len(tcp_length) < 4:
+            tcp_length = '0' + tcp_length
+        pseudo_header = ip_header[24:40] + '0006' + tcp_length
+        data = pseudo_header + data
+        checksum_calc = '0000'
+        if len(data) % 4:
+            data = data[:-2] + '00' + data[-2:]
+        word_num = int(len(data) / 4)
+        for i in range(word_num):
+            checksum_int = int(data[4 * i:4 * i + 4], 16) + int(checksum_calc, 16)
+            checksum_calc = hex(checksum_int).replace('0x', '')
+            while len(checksum_calc) > 4:
+                checksum_calc = '000' + checksum_calc
+                checksum_int = int(checksum_calc[4:], 16) + int(checksum_calc[0:4], 16)
+                checksum_calc = hex(checksum_int).replace('0x', '')
+        checksum_calc = hex((int(checksum_calc, 16) ^ (16 * 16 * 16 * 16 - 1))).replace('0x', '')
+        while len(checksum_calc) < 4:
+            checksum_calc = '0' + checksum_calc
+        if self.checksum == checksum_calc:
+            return 1
+        else:
+            return 0
 
     def summary(self):
         print('----TCP----')
@@ -187,6 +287,32 @@ class Udp(object):
     #     if self.length > 8:
     #         if (self.source_port == 53 or self.destination_port ==53):
     #             self.dns = Dns(header[16:])
+
+    def checksum_verify(self, data, ip_header):
+        data = data.replace(data[12:16], '0000')
+        udp_length = hex(int(ip_header[4:8], 16) - 20).replace('0x', '')
+        while len(udp_length) < 4:
+            udp_length = '0' + udp_length
+        pseudo_header = ip_header[24:40] + '0011' + udp_length
+        data = pseudo_header + data
+        checksum_calc = '0000'
+        if len(data) % 4:
+            data = data[:-2] + '00' + data[-2:]
+        word_num = int(len(data) / 4)
+        for i in range(word_num):
+            checksum_int = int(data[4 * i:4 * i + 4], 16) + int(checksum_calc, 16)
+            checksum_calc = hex(checksum_int).replace('0x', '')
+            while len(checksum_calc) > 4:
+                checksum_calc = '000' + checksum_calc
+                checksum_int = int(checksum_calc[4:], 16) + int(checksum_calc[0:4], 16)
+                checksum_calc = hex(checksum_int).replace('0x', '')
+        checksum_calc = hex((int(checksum_calc, 16) ^ (16 * 16 * 16 * 16 - 1))).replace('0x', '')
+        while len(checksum_calc) < 4:
+            checksum_calc = '0' + checksum_calc
+        if self.checksum == checksum_calc:
+            return 1
+        else:
+            return 0
 
     def summary(self):
         print('----UDP----')
@@ -257,7 +383,7 @@ class Packet(object):
         elif self.ether.next_proto == 'ipv4':
             ip_header_length = int(self.stream_packet[Ether.header_length*2+1],16)*4
             header = self.stream_packet[Ether.header_length*2:Ether.header_length*2+ip_header_length*2]
-            self.ip = Ip(header)
+            self.ip = Ipv4(header)
 
             if self.ip.next_proto == "tcp":
                 tcp_total_length = self.ip.total_length - self.ip.header_length
