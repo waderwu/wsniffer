@@ -55,12 +55,14 @@ def get_mac(strbyte):
     return ":".join(str2byte(strbyte))
 
 
-def get_ip(strbyte):
-    ip = str2byte(strbyte)
-    ip = '.'.join([str(int(i,16)) for i in ip])
-    return ip
+def get_ipv4(strbyte):
+    ipv4 = str2byte(strbyte)
+    ipv4 = '.'.join([str(int(i,16)) for i in ipv4])
+    return ipv4
 
-
+def get_ipv6(strbyte):
+    ipv6 = ':'.join([strbyte[i:i+4] for i in range(0,len(strbyte),4)])
+    return ipv6
 def get_timestamp(strbyte):
     '''
     2017-11-28 10:00:00
