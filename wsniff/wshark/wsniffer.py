@@ -2,7 +2,7 @@ import socket
 import traceback
 from django.db import transaction
 from proto import Packet, str2hex
-import os, sys, django
+import os, sys, django,netifaces
 
 path = os.path.dirname(__file__)
 sys.path.append(path+'/../')
@@ -14,7 +14,7 @@ from wshark.models import PacketM, ArpM, EtherM, TcpM, IpM
 sniffer = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
 
 
-def sniff(ifrace='wlp5s0'):
+def sniff(ifrace='wlp3s0'):
     sniffer.bind((ifrace, 0))
     i = 1
     while True:
@@ -42,4 +42,9 @@ def sniff(ifrace='wlp5s0'):
         i = i + 1
 if __name__ == '__main__':
     packets = PacketM.objects.all().delete()
-    sniff()
+    interface_list = netifaces.interfaces()
+    print("Please choose the interface you want from the list:")
+    for i in interface_list:
+        print(i)
+    interface = input()
+    sniff(interface)
