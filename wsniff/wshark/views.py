@@ -46,9 +46,8 @@ class TcpStream(object):
     def check_dup(self):
         pass
 
+
 def index(request):
-    # arp1 = PacketM(proto='http')
-    # arp1.save()
     if 'start' in request.GET:
         start = request.GET['start']
         if start == 'on':
@@ -60,7 +59,8 @@ def index(request):
         if start == 'off':
             pid = int(request.session['pid'])
             print(pid)
-            os.kill(pid, signal.SIGKILL)
+            # os.kill(pid, signal.SIGKILL)
+            os.kill(pid, signal.SIGALRM)
             del request.session['start']
         if start == 'clear':
             del request.session['start']
