@@ -57,11 +57,11 @@ def index(request):
                 request.session['pid'] = proc.pid
                 request.session['start'] = 'on'
         if start == 'off':
+            del request.session['start']
             pid = int(request.session['pid'])
             print(pid)
             # os.kill(pid, signal.SIGKILL)
             os.kill(pid, signal.SIGALRM)
-            del request.session['start']
         if start == 'clear':
             del request.session['start']
     if 'keyword' in request.GET:
