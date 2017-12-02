@@ -87,6 +87,9 @@ class TcpM(models.Model):
     next_proto = models.CharField(blank=True, null=True, default='',max_length=50)
     stream_index = models.IntegerField()
 
+    def order_number(self):
+        return self.sequence_number+self.acknowledgement_number
+
 
 class UdpM(models.Model):
     packet = models.OneToOneField(

@@ -13,26 +13,29 @@ from .proto import hexstr2bytes, str2hex
 
 class TcpStream(object):
     def __init__(self, stream_index):
-        self.packets = PacketM.objects.filter(tcpm__stread_index=stream_index)
-        self.packets_data = PacketM.objects.filter(tcpm__stread_index=stream_index, tcpm__segment_data_length__gt=0)  #tcpm.segment_data_length >0
-        self.handshake1_packet = PacketM.objects.filter(tcpm__stread_index=stream_index, tcpm__syn=1, tcpm__ack=0)
-        self.handshake2_packet = PacketM.objects.filter(tcpm__stread_index=stream_index, tcpm__syn=1, tcpm__ack=1)
-        self.init_seqX = None
-        self.init_seqY = None
-        if self.handshake1_packet and self.handshake2_packet:
-            self.init_seqX = self.handshake1_packet.tcpm.sequence_number
-            self.init_seqY = self.handshake2_packet.tcpm.sequence_number
+        self.packets = PacketM.objects.filter(tcpm__stream_index=stream_index).all()
+        self.packets_data = PacketM.objects.filter(tcpm__stream_index=stream_index, tcpm__segment_data_length__gt=0).all()  #tcpm.segment_data_length >0
+        # self.handshake1_packet = PacketM.objects.get(tcpm__stream_index=stream_index, tcpm__syn=1, tcpm__ack=0)
+        # self.handshake2_packet = PacketM.objects.get(tcpm__stream_index=stream_index, tcpm__syn=1, tcpm__ack=1)
+        # self.init_seqX = None
+        # self.init_seqY = None
+        # if self.handshake1_packet and self.handshake2_packet:
+        #     self.init_seqX = self.handshake1_packet.tcpm.sequence_number
+        #     self.init_seqY = self.handshake2_packet.tcpm.sequence_number
         # self.delete_dup()
+        self.get_order()
 
     def get_order(self):
-        ordered_packet = []
-        next_seq = self.init_seqX+1
-        next_ack = self.init_seqY+1
-        for i in range(self.packets_data.count()):
-            the_packet = self.packets_data.filter(tcpm__sequence_number=next_seq, tcpm__acknowledgement_number=next_ack)
-            ordered_packet.append(the_packet)
-            next_seq = the_packet.tcpm.acknowledgement_number
-            next_ack = the_packet.tcpm.sequence_number + the_packet.tcpm.segment_data_length
+        # ordered_packet = []
+        # next_seq = self.init_seqX+1
+        # next_ack = self.init_seqY+1
+        # for i in range(self.packets_data.count()):
+        #     the_packet = self.packets_data.filter(tcpm__sequence_number=next_seq, tcpm__acknowledgement_number=next_ack)
+        #     ordered_packet.append(the_packet)
+        #     next_seq = the_packet.tcpm.acknowledgement_number
+        #     next_ack = the_packet.tcpm.sequence_number + the_packet.tcpm.segment_data_length
+        self.packets_data = sorted(self.packets_data, key=lambda t: t.tcpm.order_number())
+
     def delete_dup(self):
         checksums = []
         packets_no_dup = []
@@ -72,7 +75,7 @@ def index(request):
         actual_datas = []
 
         for packet in key_packets:
-            actual_datas.append(((hexstr2bytes(packet.tcpm.actual_data),), packet.tcpm.stream_index))
+            actual_datas.append(((hexstr2bytes(packet.tcpm.actual_data),), packet))
         context = {'key_packets': key_packets, 'actual_datas': actual_datas}
     else:
         packets = PacketM.objects.all().order_by('-id')
@@ -100,18 +103,20 @@ def packet_detail(request, id):
     return render(request, 'wshark/packet.html', context=context)
 
 def stream(request, stream_index):
-    packets = PacketM.objects.filter(tcpm__stream_index=stream_index).order_by('id')
+    # packets = PacketM.objects.filter(tcpm__stream_index=stream_index).order_by('id')
+    thestream = TcpStream(stream_index=stream_index)
     actual_datas = []
 
-    for packet in packets:
+    for packet in thestream.packets_data:
         print(packet.id)
         if packet.tcpm.segment_data_length > 0:
             actual_datas.append((hexstr2bytes(packet.tcpm.actual_data),))
+
     datas = b''
     if 'import' in request.GET:
         for data in actual_datas:
             datas += data[0]
-        response = HttpResponse(datas,content_type='application//html')
+        response = HttpResponse(datas, content_type='application//html')
         return response
 
     context = {'actual_datas': actual_datas}

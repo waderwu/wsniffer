@@ -70,15 +70,15 @@
                             <td>Application Data[TCP segment of a reassembled PDU]</td>
                     </tr>
                     {% endif %}
-                {% if packet.proto == 'tcp' %}
+                {% if packet.proto == 'tcp' or packet.proto == 'http' %}
                     <tr class='clickable-row' data-href='/wshark/packet/{{packet.id}}'>
                       <td>{{packet.id}}</td>
                       <td>notime</td>
 
                             <td>{{packet.ipm.source}}</td>
                             <td>{{packet.ipm.destination}}</td>
-                            <td>tcp</td>
-                            <td>length</td>
+                            <td>{{packet.proto}}</td>
+                            <td>{{packet.tcpm.segment_data_length}}</td>
                             <td>Application Data[TCP segment of a reassembled PDU]</td>
                     </tr>
                     {% endif %}
@@ -89,7 +89,32 @@
 
         {% if actual_datas %}
          {% for actual_data, j in actual_datas %}
-            <a href="/wshark/stream/{{j}}">follow the tcp stream</a>
+            <a href="/wshark/stream/{{j.tcpm.stream_index}}">follow the tcp stream</a>
+            <table class="table table-striped">
+                  <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Time</th>
+                        <th>Source</th>
+                        <th>Destination</th>
+                        <th>seq number</th>
+                        <th>ack number</th>
+                        <th>length</th>
+                    </tr>
+                  </thead>
+            <tbody>
+            <tr>
+                      <td>{{j.id}}</td>
+                      <td>notime</td>
+
+                            <td>{{j.ipm.source}}</td>
+                            <td>{{j.ipm.destination}}</td>
+                            <td>{{j.tcpm.sequence_number}}</td>
+                            <td>{{j.tcpm.acknowledgement_number}}</td>
+                            <td>{{j.tcpm.segment_data_length}}</td>
+                    </tr>
+            </tbody>
+            </table>
             <p>{{actual_data}}</p>
         {% endfor %}
         {% endif %}
