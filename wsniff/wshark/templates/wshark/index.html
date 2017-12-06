@@ -22,9 +22,12 @@
     <!--<![endif]&ndash;&gt;-->
      <style>
          tr {
-             line-height: 10px;
+             line-height: 5px;
              min-height: 10px;
              height: 10px;
+         }
+         table{
+             font-size: 10px;
          }
      </style>
   </head>
@@ -65,6 +68,9 @@
             <br>
             destination
             <input name="destination" placeholder="ip:port">
+            <br>
+            proto type
+            <input name="proto">
             <input type="hidden" name="filter">
             <input type="submit" value="filter">
         </form>
@@ -94,7 +100,7 @@
                             <td>{{packet.etherm.d_mac}}</td>
                             <td>arp</td>
                             <td>length</td>
-                            <td>Application Data[TCP segment of a reassembled PDU]</td>
+                            <td>{{packet.arpm.get_info}}</td>
                     </tr>
                     {% endif %}
                 {% if packet.proto == 'tcp' or packet.proto == 'http'  or packet.proto == 'ftp'%}
@@ -106,7 +112,7 @@
                             <td>{{packet.ipm.destination}}</td>
                             <td>{{packet.proto}}</td>
                             <td>{{packet.tcpm.segment_data_length}}</td>
-                            <td>Application Data[TCP segment of a reassembled PDU]</td>
+                            <td>{{packet.tcpm.source_port}} -> {{packet.tcpm.destination_port}} [ {{packet.tcpm.get_flag}}] seq={{packet.tcpm.sequence_number}} ack={{packet.tcpm.acknowledgement_number}} Win={{packet.tcpm.window_size_value}} len={{packet.tcpm.segment_data_length}}</td>
                     </tr>
                     {% endif %}
                 {% endfor %}

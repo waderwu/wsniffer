@@ -41,6 +41,12 @@ class ArpM(models.Model):
     target_mac_address = models.CharField(max_length=50)
     target_ip_address = models.CharField(max_length=50)
 
+    def get_info(self):
+        if self.target_mac_address == '00:00:00:00:00:00':
+            return 'who has %s? tell %s' %(self.target_ip_address, self.sender_ip_address)
+        else:
+            return 'the %s is at %s' % (self.sender_ip_address, self.sender_mac_address)
+
 
 class IpM(models.Model):
     packet = models.OneToOneField(
@@ -87,6 +93,17 @@ class TcpM(models.Model):
     actual_data = models.TextField(blank=True, null=True, default='')
     next_proto = models.CharField(blank=True, null=True, default='',max_length=50)
     stream_index = models.IntegerField()
+
+    def get_flag(self):
+        flag = ''
+        if self.syn =='1':
+            flag += 'syn '
+        if self.ack =='1':
+            flag += 'ack '
+        if self.fin == '1':
+            flag += 'fin '
+        return flag
+
 
     def order_number(self):
         return self.sequence_number+self.acknowledgement_number

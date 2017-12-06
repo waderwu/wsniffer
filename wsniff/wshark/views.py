@@ -194,6 +194,7 @@ def index(request):
         source_ip = ''
         destination_port = ''
         destination_ip = ''
+        proto = request.GET['proto']
         if ':' in request.GET['source']:
             source_ip = request.GET['source'].split(':')[0]
             source_port = request.GET['source'].split(':')[1]
@@ -210,6 +211,8 @@ def index(request):
             packets = packets.filter(ipm__destination=destination_ip)
         if destination_port != '':
             packets = packets.filter(tcpm__destination_port=destination_port)
+        if proto != '':
+            packets = packets.filter(proto=proto)
         context = {'packets': packets}
     elif 'keyword' in request.GET:
         print(type(request.GET['keyword']))
