@@ -44,8 +44,8 @@
 
 待解决:
 - models需增加 icmp 和dns
-- 解决out of oreder问题
--  tcp dup 问题
+~~ 解决out of oreder问题 ~~
+~~ tcp dup 问题 ~~
 - 包过滤
 - 数据包保存
 - 文件过滤 可能根据http 请求头的content-type , text/html,.....等类型
@@ -66,4 +66,25 @@ http://packetlife.net/blog/2010/jun/7/understanding-tcp-sequence-acknowledgment-
 
 #bug
 - 解析dns 回复的包的时候会有问题
-- 可能会丢失最后100个包(解决方法, 尽量抓时间长一点,多抓一点包)
+~~ 可能会丢失最后100个包(解决方法, 尽量抓时间长一点,多抓一点包) ~~
+
+# 作业要求
+- 选择网卡侦听数据包,并解析下面的数据包
+    - arp
+    - ip
+    - icmp
+    - tcp
+    - udp
+- 显示tcp,udp数据包全部数据
+    - ip 重组
+- 包过滤
+    - 源, 目的ip
+    - 源, 目的端口
+    - 指定协议
+- 数据包查询
+
+- 数据包保存
+
+- 文件重组
+
+- 文件类型过滤, 抓到文件后可以解析其属于视频文件,音频文件,图片文件,文本文件等
