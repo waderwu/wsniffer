@@ -33,7 +33,16 @@
                 </div>
             </div>
         </nav>
-        <li><a href="/wshark?start=on">start</a></li>
+        <!--<li><a href="/wshark?start=on">start</a></li>-->
+        <form action="/wshark/" method="get">
+            <select name="interface">
+            {% for interface in interfaces %}
+            <option value="{{interface}}">{{interface}}</option>
+            {% endfor %}
+            </select>
+            <input type="hidden" name="start" value="on">
+            <input type="submit" value="start">
+        </form>
         <li><a href="/wshark?start=off">off</a></li>
         <li><a href="/wshark?delete=yes">delete</a></li>
         <li><a href="/wshark">refresh</a></li>

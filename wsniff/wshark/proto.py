@@ -1,3 +1,4 @@
+import os
 def str2hex(packet):
     '''
     b'aa' => '6161'
@@ -65,6 +66,13 @@ def get_timestamp(strbyte):
     '''
     '''
     return 'will be done'
+
+
+def get_interfaces():
+    '''
+    return ['vmnet8', 'vmnet1', 'vmnet2', 'wlp5s0', 'docker0', 'lo', 'enp3s0']
+    '''
+    return os.listdir('/sys/class/net')
 
 
 class Ether(object):

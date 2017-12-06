@@ -6,7 +6,7 @@ import os
 import signal
 from django.shortcuts import render
 from .models import PacketM, EtherM, ArpM
-from .proto import hexstr2bytes, str2hex
+from .proto import hexstr2bytes, str2hex, get_interfaces
 
 
 # Create your views here.
@@ -152,9 +152,11 @@ def index(request):
     if 'start' in request.GET:
         start = request.GET['start']
         if start == 'on':
+            interface = request.GET['interface']
+            print(interface)
             if 'start' not in request.session:
                 print(os.path.dirname(__file__))
-                proc = subprocess.Popen(['python3', os.path.dirname(__file__)+'/wsniffer.py'])
+                proc = subprocess.Popen(['python3', os.path.dirname(__file__)+'/wsniffer.py', interface])
                 request.session['pid'] = proc.pid
                 request.session['start'] = 'on'
         if start == 'off':
@@ -182,6 +184,8 @@ def index(request):
             packets.delete()
         # return HttpResponse("Hello, world. you're at the wsahrk index.")
         context = {'packets': packets[:100]}
+    interfaces = get_interfaces()
+    context['interfaces'] = interfaces
     return render(
         request,
         'wshark/index.html',

@@ -113,4 +113,6 @@ if __name__ == '__main__':
     #     print(i)
     # interface = input()
     switch = 1
-    sniff('wlp5s0')
+    interface = sys.argv[1]
+    print('choosed interface card is ', interface)
+    sniff(interface)
