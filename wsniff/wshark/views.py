@@ -54,6 +54,17 @@ class Http(object):
                 f2.write(self.response_data)
 
 
+class Ftp(object):
+    def __init__(self):
+        self.passive_port = None
+        self.file_stream_index = None
+
+    def get_passiveport(self):
+        pass
+    def download_file(self):
+        pass
+
+
 class HttpFile(object):
     def __init__(self, stream_index):
         self.tcpstream = TcpStream(stream_index)
@@ -99,7 +110,8 @@ def httplist(packets, httpl=[]):
 
 class TcpStream(object):
     def __init__(self, stream_index):
-        self.packets = PacketM.objects.filter(tcpm__stream_index=stream_index).all()
+        self.proto = None
+        self.packets = PacketM.objects.filter(tcpm__stream_index=stream_index)
         self.packets_data = PacketM.objects.filter(tcpm__stream_index=stream_index, tcpm__segment_data_length__gt=0).all()  #tcpm.segment_data_length >0
         # self.handshake1_packet = PacketM.objects.get(tcpm__stream_index=stream_index, tcpm__syn=1, tcpm__ack=0)
         # self.handshake2_packet = PacketM.objects.get(tcpm__stream_index=stream_index, tcpm__syn=1, tcpm__ack=1)
@@ -111,6 +123,7 @@ class TcpStream(object):
         # self.delete_dup()
         self.get_order()
         self.delete_dup()
+        self.get_proto()
 
     def get_order(self):
         # ordered_packet = []
@@ -140,6 +153,12 @@ class TcpStream(object):
                 checksums.append(packet.tcpm.sequence_number+packet.tcpm.acknowledgement_number)
                 packets_no_dup.append(packet)
         self.packets_data = packets_no_dup  #may have bug
+
+    def get_proto(self):
+        if self.packets_data[0].tcpm.source_port == 80 or self.packets_data[0].tcpm.destination_port == 80:
+            self.proto = 'http'
+        elif self.packets_data[0].tcpm.source_port == 21 or self.packets_data[0].tcpm.destination_port == 21:
+            self.proto = 'ftp'
 
 
 
@@ -209,27 +228,40 @@ def stream(request, stream_index):
     thestream = TcpStream(stream_index=stream_index)
     print('haha', thestream)
     actual_datas = []
+    ftp_data_stream_index = None
 
     for packet in thestream.packets_data:
         print(packet.id)
         if packet.tcpm.segment_data_length > 0:
+            print(packet.tcpm.actual_data)
             actual_datas.append((hexstr2bytes(packet.tcpm.actual_data),))
-    httpl = []
-    httplist(thestream.packets_data, httpl)
-    print(httpl)
-    for http in httpl:
-        # print(http.request_header)
-        # print(http.response_header)
-        http.parse()
-        # print(http.req)
-        # print(http.res)
-        # print(http.req_dict)
-        # print(http.res_dict)
-        # print(http.content_type)
-        http.download_file()
-        # print(http.req_list)
-        # print(http.res_list)
-        # print(http.response_data)
+    print(thestream.proto)
+    if thestream.proto == 'http':
+        httpl = []
+        httplist(thestream.packets_data, httpl)
+        print(httpl)
+        for http in httpl:
+            # print(http.request_header)
+            # print(http.response_header)
+            http.parse()
+            # print(http.req)
+            # print(http.res)
+            # print(http.req_dict)
+            # print(http.res_dict)
+            # print(http.content_type)
+            http.download_file()
+            # print(http.req_list)
+            # print(http.res_list)
+            # print(http.response_data)
+    elif thestream.proto == 'ftp':
+        thepacket = thestream.packets.filter(tcpm__actual_data__contains = str2hex('227 Entering Passive Mode'))[0]
+        p1 = hexstr2bytes(thepacket.tcpm.actual_data).split(b',')[4]
+        p2 = hexstr2bytes(thepacket.tcpm.actual_data).split(b',')[5].split(b')')[0]
+        pasprot = int(p1)*256+int(p2)
+        print(pasprot)
+        ftpdatapacket = PacketM.objects.filter(tcpm__source_port=pasprot)[0]
+        print(ftpdatapacket.tcpm.stream_index)
+        ftp_data_stream_index = ftpdatapacket.tcpm.stream_index
     datas = b''
     if 'import' in request.GET:
         for data in actual_datas:
@@ -237,5 +269,5 @@ def stream(request, stream_index):
         response = HttpResponse(datas, content_type='application//html')
         return response
 
-    context = {'actual_datas': actual_datas}
+    context = {'actual_datas': actual_datas, 'stream_index': ftp_data_stream_index}
     return render(request, 'wshark/stream.html', context=context)

@@ -27,7 +27,7 @@ def byte2bin(hexstr):
     length = len(hexstr)*4
     formats = '{:0%db}'%length
 
-    return formats.format(int(hexstr,16))
+    return formats.format(int(hexstr, 16))
 
 
 def hexstr2unicode(hexstr):
@@ -206,6 +206,11 @@ class Tcp(object):
             elif self.source_port == 443 or self.destination_port == 443:
                 self.get_data(data)
                 self.next_proto = 'TSL'
+            elif self.source_port == 21 or self.destination_port == 21:
+                self.get_data(data)
+                self.next_proto = 'ftp'
+            else:
+                self.get_data(data)
 
     def summary(self):
         print('----TCP----')

@@ -79,7 +79,7 @@
                             <td>Application Data[TCP segment of a reassembled PDU]</td>
                     </tr>
                     {% endif %}
-                {% if packet.proto == 'tcp' or packet.proto == 'http' %}
+                {% if packet.proto == 'tcp' or packet.proto == 'http'  or packet.proto == 'ftp'%}
                     <tr class='clickable-row' data-href='/wshark/packet/{{packet.id}}'>
                       <td>{{packet.id}}</td>
                       <td>{{packet.timestamp}}</td>

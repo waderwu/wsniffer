@@ -36,7 +36,7 @@ def insert_packet(plist, i, begin):
                                    target_ip_address=p.arp.target_ip_address,
                                    target_mac_address=p.arp.target_mac_address)
                         arp.save()
-                    if pa.proto == 'tcp' or pa.proto == 'http' or pa.proto == 'TSL':
+                    if pa.proto == 'tcp' or pa.proto == 'http' or pa.proto == 'TSL' or pa.proto == 'ftp':
                         ip = IpM(packet=pa, version=p.ip.version, header_length=p.ip.header_length, dsf=p.ip.dsf,
                                  total_length=p.ip.total_length, indentification=p.ip.indentification, flags=p.ip.flags,
                                  fragment_offset=p.ip.fragment_offset, time_to_live=p.ip.time_to_live,
