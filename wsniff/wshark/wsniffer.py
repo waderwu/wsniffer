@@ -15,13 +15,14 @@ from wshark.models import PacketM, ArpM, EtherM, TcpM, IpM
 sniffer = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
 sniffer.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2**30)
 
-def insert_packet(plist,i):
+
+def insert_packet(plist, i, begin):
     with transaction.atomic():
         for header1 in plist:
             try:
                 p = Packet(str2hex(header1))
                 if p.proto:
-                    pa = PacketM(id=i, proto=p.proto)
+                    pa = PacketM(id=i, proto=p.proto,timestamp=time.time()-begin)
                     pa.save()
                     eth = EtherM(packet=pa, d_mac=p.ether.d_mac, s_mac=p.ether.s_mac, type=p.ether.type,
                                  next_proto=p.ether.next_proto)
@@ -63,20 +64,20 @@ def save_packet(q):
     sys.path.append(path + '/../')
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wsniff.settings")
     django.setup()
-    begin = time.time()
     i = 1
     plist = []
+    begin = time.time()
     while True:
         print(i)
         header = q.get()
         if header == 'over':
             break
         if i % 100 == 0:
-            insert_packet(plist,i-100)
+            insert_packet(plist, i-100, begin)
             plist = []
         plist.append(header)
         i = i + 1
-    insert_packet(plist, i-i%100)
+    insert_packet(plist, i-i%100, begin)
     print(time.time()-begin)
 
 

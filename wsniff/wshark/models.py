@@ -10,6 +10,7 @@ from django.db import models
 class PacketM(models.Model):
     id = models.IntegerField(primary_key=True)
     proto = models.CharField(max_length=50)
+    timestamp = models.FloatField()
 
 
 class EtherM(models.Model):

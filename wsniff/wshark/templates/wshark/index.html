@@ -70,7 +70,7 @@
                     {% if packet.proto == 'arp' %}
                     <tr class='clickable-row' data-href='/wshark/packet/{{packet.id}}'>
                       <td>{{packet.id}}</td>
-                      <td>notime</td>
+                      <td>{{packet.timestamp}}</td>
 
                             <td>{{packet.etherm.s_mac}}</td>
                             <td>{{packet.etherm.d_mac}}</td>
@@ -82,7 +82,7 @@
                 {% if packet.proto == 'tcp' or packet.proto == 'http' %}
                     <tr class='clickable-row' data-href='/wshark/packet/{{packet.id}}'>
                       <td>{{packet.id}}</td>
-                      <td>notime</td>
+                      <td>{{packet.timestamp}}</td>
 
                             <td>{{packet.ipm.source}}</td>
                             <td>{{packet.ipm.destination}}</td>
@@ -114,7 +114,7 @@
             <tbody>
             <tr>
                       <td>{{j.id}}</td>
-                      <td>notime</td>
+                      <td>{{j.timestamp}}</td>
 
                             <td>{{j.ipm.source}}</td>
                             <td>{{j.ipm.destination}}</td>

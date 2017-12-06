@@ -8,7 +8,7 @@ from .models import PacketM, EtherM, ArpM, TcpM, IpM
 
 @admin.register(PacketM)
 class PacketMAdmin(admin.ModelAdmin):
-    list_display = ('id', 'proto')
+    list_display = ('id', 'proto', 'timestamp')
 
 
 @admin.register(EtherM)
