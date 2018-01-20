@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+{% block content %}
+ <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+
+    <title>Wshark</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/static/wshark/css/bootstrap.min.css" rel="stylesheet">
+     <link href="/static/wshark/css/bootstrap.css" rel="stylesheet">
+     <!--<link href="https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/bootstrap.css" rel="stylesheet">-->
+     <!--<link href="https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" rel="stylesheet">-->
+     <script src="/static/wshark/js/juqery.min.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <!--<script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>-->
+    <!--<![endif]&ndash;&gt;-->
+      <style>
+         tr {
+             line-height: 5px;
+             min-height: 10px;
+             height: 10px;
+         }
+         table{
+             font-size: 10px;
+         }
+     </style>
+  </head>
+
+<body>
+    <div class="container">
+
+        <!-- 导航栏 -->
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="/wshark">Wshark</a>
+                </div>
+            </div>
+        </nav>
+        <li><a href="/wshark">index</a></li>
+        {% if packet.proto == 'tcp' or packet.proto == 'http' or packet.proto == 'ftp' %}
+        <li><a href="/wshark/stream/{{packet.tcpm.stream_index}}">follow the tcp stream</a></li>
+        {% endif %}
+        <table class="table table-bordered">
+            <caption>抓包结果</caption>
+                  <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Time</th>
+                        <th>Source</th>
+                        <th>Destination</th>
+                        <th>Protocol</th>
+                        <th>Length</th>
+                        <th>Info</th>
+                    </tr>
+                  </thead>
+            <tbody>
+            {% if packet %}
+                    {% if packet.proto == 'arp' %}
+                    <tr>
+                      <td>{{packet.id}}</td>
+                      <td>{{packet.timestamp}}</td>
+                        <td>{{packet.etherm.s_mac}}</td>
+                        <td>{{packet.etherm.d_mac}}</td>
+                        <td>arp</td>
+                        <td>length</td>
+                        <td>{{packet.arpm.get_info}}</td>
+                    </tr>
+                    {% endif %}
+                {% if packet.proto == 'tcp' or packet.proto == 'http' or packet.proto == 'ftp' %}
+                    <tr>
+                      <td>{{packet.id}}</td>
+                      <td>{{packet.timestamp}}</td>
+
+                            <td>{{packet.ipm.source}}</td>
+                            <td>{{packet.ipm.destination}}</td>
+                            <td>{{packet.proto}}</td>
+                            <td>{{packet.tcpm.segment_data_length}}</td>
+                            <td>{{packet.tcpm.source_port}} -> {{packet.tcpm.destination_port}} [ {{packet.tcpm.get_flag}}] seq={{packet.tcpm.sequence_number}} ack={{packet.tcpm.acknowledgement_number}} Win={{packet.tcpm.window_size_value}} len={{packet.tcpm.segment_data_length}}</td>
+                    </tr>
+                    {% endif %}
+            {% endif %}
+            </tbody>
+        </table>
+        <p>
+            {{actual_data}}
+        </p>
+
+        {% if packet %}
+            <table class="table table-striped">
+            <caption>抓包结果</caption>
+            <tbody>
+            <tr>
+                <td>d_mac</td>
+                <td>{{packet.etherm.d_mac}}</td>
+            </tr>
+            <tr>
+                <td>s_mac</td>
+                <td>{{packet.etherm.s_mac}}</td>
+            </tr>
+            {% if packet.proto == 'arp' %}
+            <tr>
+                <td>hardware_type</td>
+                <td>{{packet.arpm.hardware_type}}</td>
+            </tr>
+            <tr>
+                <td>protocol_type</td>
+                <td>{{packet.arpm.protocol_type}}</td>
+            </tr>
+            <tr>
+                <td>hardware_size</td>
+                <td>{{packet.arpm.hardware_size}}</td>
+            </tr>
+            <tr>
+                <td>protocol_size</td>
+                <td>{{packet.arpm.protocol_size}}</td>
+            </tr>
+            <tr>
+                <td>opcode</td>
+                <td>{{packet.arpm.opcode}}</td>
+            </tr>
+            <tr>
+                <td>sender_mac_address</td>
+                <td>{{packet.arpm.sender_mac_address}}</td>
+            </tr>
+            <tr>
+                <td>sender_ip_address</td>
+                <td>{{packet.arpm.sender_ip_address}}</td>
+            </tr>
+            <tr>
+                <td>target_mac_address</td>
+                <td>{{packet.arpm.target_mac_address}}</td>
+            </tr>
+            <tr>
+                <td>target_ip_address</td>
+                <td>{{packet.arpm.target_ip_address}}</td>
+            </tr>
+            {% endif %}
+            {% if packet.proto == 'tcp' or packet.proto == 'http' or packet.proto == 'ftp'%}
+            <tr>
+                <td>version</td>
+                <td>{{packet.ipm.version}}</td>
+            </tr>
+            <tr>
+                <td>header_length</td>
+                <td>{{packet.ipm.header_length}}</td>
+            </tr>
+            <tr>
+                <td>dsf</td>
+                <td>{{packet.ipm.dsf}}</td>
+            </tr>
+            <tr>
+                <td>total_length</td>
+                <td>{{packet.ipm.total_length}}</td>
+            </tr>
+            <tr>
+                <td>indentification</td>
+                <td>{{packet.ipm.indentification}}</td>
+            </tr>
+            <tr>
+                <td>flags</td>
+                <td>{{packet.ipm.flags}}</td>
+            </tr>
+            <tr>
+                <td>fragment_offset</td>
+                <td>{{packet.ipm.fragment_offset}}</td>
+            </tr>
+            <tr>
+                <td>time_to_live</td>
+                <td>{{packet.ipm.time_to_live}}</td>
+            </tr>
+            <tr>
+                <td>checksum</td>
+                <td>{{packet.ipm.checksum}}</td>
+            </tr>
+            <tr>
+                <td>source</td>
+                <td>{{packet.ipm.source}}</td>
+            </tr>
+            <tr>
+                <td>destination</td>
+                <td>{{packet.ipm.destination}}</td>
+            </tr>
+
+            <tr>
+                <td>source_port</td>
+                <td>{{packet.tcpm.source_port}}</td>
+            </tr>
+            <tr>
+                <td>destination_port</td>
+                <td>{{packet.tcpm.destination_port}}</td>
+            </tr>
+            <tr>
+                <td>sequence_number</td>
+                <td>{{packet.tcpm.sequence_number}}</td>
+            </tr>
+            <tr>
+                <td>acknowledgement_number</td>
+                <td>{{packet.tcpm.acknowledgement_number}}</td>
+            </tr><tr>
+                <td>header_length</td>
+                <td>{{packet.tcpm.header_length}}</td>
+            </tr>
+            <tr>
+                <td>syn</td>
+                <td>{{packet.tcpm.ack}}</td>
+            </tr>
+            <tr>
+                <td>push</td>
+                <td>{{packet.tcpm.push}}</td>
+            </tr>
+            <tr>
+                <td>fin</td>
+                <td>{{packet.tcpm.fin}}</td>
+            </tr><tr>
+                <td>window_size_value</td>
+                <td>{{packet.tcpm.window_size_value}}</td>
+            </tr>
+            <tr>
+                <td>checksum</td>
+                <td>{{packet.tcpm.checksum}}</td>
+            </tr>
+            <tr>
+                <td>urgent_pointer</td>
+                <td>{{packet.tcpm.urgent_pointer}}</td>
+            </tr>
+            <tr>
+                <td>options</td>
+                <td>{{packet.tcpm.options}}</td>
+            </tr>
+            <tr>
+                <td>segment_data_length</td>
+                <td>{{packet.tcpm.segment_data_length}}</td>
+            </tr>
+            <tr>
+                <td>next_proto</td>
+                <td>{{packet.tcpm.next_proto}}</td>
+            </tr>
+            <tr>
+                <td>stream_index</td>
+                <td>{{packet.tcpm.stream_index}}</td>
+            </tr>
+            {% endif %}
+            </tbody>
+        </table>
+
+        {% endif %}
+
+    </div>
+
+</body>
+
+</html>
+
+{% endblock %}
